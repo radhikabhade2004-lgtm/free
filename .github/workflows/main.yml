@@ -20,13 +20,28 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/html
-            if [ -d ".git" ]; then
-              # Repo exists → update it
-              git fetch --all
-              git reset --hard origin/main
-            else
-              # Repo doesn't exist → empty folder and clone
-              rm -rf *
-              git clone https://github.com/radhikabhade2004-lgtm/free.git .
+            set -x  # Show commands in logs for debugging
+            # Target directory
+            TARGET_DIR="/var/www/html"
+            
+            # Ensure git is installed
+            if ! command -v git &> /dev/null; then
+              echo "Git not found, installing..."
+              sudo apt update
+              sudo apt install git -y
             fi
+
+            # Temporary folder for safer deployment
+            TMP_DIR="/tmp/deploy-temp"
+
+            # Clone repo to temp folder
+            rm -rf $TMP_DIR
+            git clone https://github.com/radhikabhade2004-lgtm/free.git $TMP_DIR
+
+            # Sync files to target directory (safer than rm -rf *)
+            rsync -av --delete $TMP_DIR/ $TARGET_DIR/
+
+            # Clean up temp folder
+            rm -rf $TMP_DIR
+
+            echo "Deployment completed successfully!"
