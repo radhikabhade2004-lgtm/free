@@ -21,5 +21,10 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           script: |
-            cd /var/www/html
-            git pull origin main
+           cd /var/www/html
+           if [ ! -d ".git" ]; then
+           git clone git@github.com:YOUR_USERNAME/YOUR_REPO.git .
+           else
+           git pull origin main
+           fi
+
