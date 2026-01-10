@@ -13,18 +13,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to VPS
+      - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-           cd /var/www/html
-           if [ ! -d ".git" ]; then
-           git clone git@github.com:YOUR_USERNAME/YOUR_REPO.git .
-           else
-           git pull origin main
-           fi
-
+            cd /var/www/html
+            if [ -d ".git" ]; then
+              # Repo exists → update it
+              git fetch --all
+              git reset --hard origin/main
+            else
+              # Repo doesn't exist → empty folder and clone
+              rm -rf *
+              git clone https://github.com/radhikabhade2004-lgtm/free.git .
+            fi
